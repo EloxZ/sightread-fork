@@ -7,6 +7,11 @@ import { SongSource } from '@/types'
 import { SongPreview } from '@/features/SongPreview/SongPreview'
 import PreviewIcon from '@/features/SongPreview/PreviewIcon'
 import { Share, Download } from '@/icons'
+import * as synth from 'synth-js'
+import fs from 'fs/promises'
+import { Midi } from '@tonejs/midi'
+
+//const lamejs = require('lamejs')
 
 // A function to copy a string to the clipboard
 function copyToClipboard(text: string) {
@@ -20,6 +25,22 @@ function downloadBase64Midi(midiBase64: string) {
   downloadLink.href = URL.createObjectURL(midiBlob)
   downloadLink.download = 'recording.mid'
   downloadLink.click()
+  downloadMP3(midiBase64);
+}
+
+function downloadMP3(midiBase64: string) {
+  const mp3Buffer = convertMidiBase64ToMP3Buffer(midiBase64)
+  const mp3Blob = new Blob([mp3Buffer], { type: 'audio/wav' })
+  const downloadLink = document.createElement('a')
+  downloadLink.href = URL.createObjectURL(mp3Blob)
+  downloadLink.download = 'recording.mp3'
+  downloadLink.click()
+}
+
+function convertMidiBase64ToMP3Buffer(midiBase64: string) {
+  const midiBuffer = Buffer.from(midiBase64, 'base64')
+  const wavBuffer = synth.midiToWav(midiBuffer).toBuffer();
+  return wavBuffer;
 }
 
 type ModalProps = {
